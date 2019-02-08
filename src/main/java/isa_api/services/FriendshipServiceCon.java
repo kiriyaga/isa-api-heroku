@@ -105,7 +105,16 @@ public class FriendshipServiceCon implements FriendshipService {
 	public ResponseEntity<Object> getSearchUsers(String search) {
 
 		String[] splitStr = search.split("\\s+");
-		System.out.println("name:" + splitStr[0] + "da" + splitStr[1]);
+		String name="";
+		String lastname="";
+		if(splitStr.length == 1) {
+			name+=splitStr[0];
+		}
+		else if(splitStr.length==2) {
+			name+=splitStr[0];
+			lastname+= splitStr[1];
+		}
+
 		List<RegistredUser> users = regUserRepository.findAll();
 		RegistredUser userTemp = regUserRepository
 				.findByUsername(SecurityContextHolder.getContext().getAuthentication().getPrincipal().toString());
@@ -115,7 +124,7 @@ public class FriendshipServiceCon implements FriendshipService {
 		List<RegistredUser> userForSearch = new ArrayList<>();
 		for (RegistredUser registredUser : users) {
 
-			if (!registredUser.getName().contains(splitStr[0]) && !registredUser.getLastName().contains(splitStr[1])) {
+			if (!registredUser.getName().contains(name) || !registredUser.getLastName().contains(lastname)) {
 				continue;
 			}
 			boolean friendB = false;
@@ -141,8 +150,6 @@ public class FriendshipServiceCon implements FriendshipService {
 			}
 		}
 		// treba isfiltrirati prijatelje i zahteve za prijateljstvo
-
-		System.out.println(userForSearch.size());
 
 		return new ResponseEntity<Object>(userForSearch, HttpStatus.OK);
 	}

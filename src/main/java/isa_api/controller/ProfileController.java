@@ -45,7 +45,7 @@ public class ProfileController {
 	}
 
 	@RequestMapping(method = RequestMethod.POST, value = "/auth/profile/searchForFriend", consumes = MediaType.APPLICATION_JSON_VALUE)
-	public ResponseEntity<?> searchforUsers(@RequestBody FriendParamsDTO params) {
+	public ResponseEntity<?> searchforUsers(@Valid @RequestBody FriendParamsDTO params) {
 
 		return userService.searchForUsers(params.getName(), params.getLastname());
 	}

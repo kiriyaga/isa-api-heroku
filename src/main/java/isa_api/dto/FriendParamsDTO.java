@@ -1,9 +1,13 @@
 package isa_api.dto;
 
+import javax.validation.constraints.NotNull;
+
 public class FriendParamsDTO {
 
 	private String username;
+	@NotNull(message = "Name is required!")
 	private String name;
+	@NotNull(message = "Lastname is required!")
 	private String lastname;
 
 	public String getUsername() {

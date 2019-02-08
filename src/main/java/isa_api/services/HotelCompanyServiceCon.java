@@ -17,6 +17,7 @@ import isa_api.beans.Location;
 import isa_api.beans.hotel.HotelAdditionalService;
 import isa_api.beans.hotel.HotelAdditionalServiceEnum;
 import isa_api.beans.hotel.HotelCompany;
+import isa_api.beans.hotel.HotelFastReservationOffer;
 import isa_api.beans.hotel.Room;
 import isa_api.beans.hotel.RoomReservation;
 import isa_api.beans.users.HotelAdmin;
@@ -24,6 +25,7 @@ import isa_api.beans.users.RegistredUser;
 import isa_api.dao.HotelAdditionalServiceRepository;
 import isa_api.dao.HotelAdminRepository;
 import isa_api.dao.HotelCompanyRepository;
+import isa_api.dao.HotelFastReservationOfferRepository;
 import isa_api.dao.LocationRepository;
 import isa_api.dao.RegistredUserRepository;
 import isa_api.dao.RoomRepository;
@@ -31,6 +33,8 @@ import isa_api.dao.RoomReservationRepository;
 import isa_api.dto.BasicDestinationDTO;
 import isa_api.dto.BasicHotelCompanyDTO;
 import isa_api.dto.HotelAdditionalServiceDTO;
+import isa_api.dto.HotelFastReservationRoomDTO;
+import isa_api.dto.HotelFastReserveOfferToReservationDTO;
 import isa_api.dto.ResponseMessage;
 import isa_api.dto.RoomHotelCompanyDTO;
 import isa_api.dto.RoomReservationDTO;
@@ -60,6 +64,9 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 
 	@Autowired
 	RegistredUserRepository regUserRepository;
+	
+	@Autowired
+	HotelFastReservationOfferRepository hfroRepository;
 
 	@Override
 	public ResponseEntity<Object> getHotelCompany(Long id) {
@@ -280,6 +287,10 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 
 		calCID.setTime(checkInDate);
 		calCOD.setTime(checkOutDate);
+		
+		System.out.println("--------------------------------------------");
+		System.out.println(checkInDate);
+		System.out.println(checkOutDate);
 
 		if (calCOD.before(calCID)) {
 			return new ResponseEntity<Object>(searchedRooms, HttpStatus.OK);
@@ -296,18 +307,32 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 			if (calCID.equals(calCOD)) {
 				System.out.println("nisi dirao datum ili si podesio da su isti");
 				dateIsOK = true;
-			} else if (roomReservations.isEmpty()) {
+			} 
+			
+			if (roomReservations.isEmpty()) {
 				System.out.println("datum je okej kako god jer nema rezervacija za ovu sobu");
 				dateIsOK = true;
 			} else {
 				// ako jeste, onda videti da l za sobu postoje rezervacije u taj period
 				for (RoomReservation rr : roomReservations) {
-					if (calCID.after(rr.getCheckOut())) {
+					
+					Calendar resCID = Calendar.getInstance();
+					Calendar resCOD = Calendar.getInstance();
+					
+					resCID.setTime(rr.getCheckIn());
+					resCOD.setTime(rr.getCheckOut());
+					
+					System.out.println();
+					
+					if (calCID.after(resCOD)) {
 						dateIsOK = true;
-					} else if (calCOD.before(rr.getCheckIn())) {
+						System.out.println("check in je posle reservacije");
+					} else if (calCOD.before(resCID)) {
 						dateIsOK = true;
+						System.out.println("check out je pre reservacije");
 					} else {
 						dateIsOK = false;
+						System.out.println("nesto trece - jebem li ga");
 						break;
 					}
 				}
@@ -328,8 +353,6 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 				hotelNameIsOK = true;
 			} else {
 				String roomCompanyName = r.getHotelCompany().getName().toLowerCase();
-				System.out.println(roomCompanyName);
-				System.out.println(hotelName.toLowerCase());
 				if (roomCompanyName.contains(hotelName.toLowerCase())) {
 					System.out.println(roomCompanyName + " contains " + hotelName.toLowerCase());
 					hotelNameIsOK = true;
@@ -358,7 +381,7 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 			}
 
 			SearchedRoomsDTO srdto = new SearchedRoomsDTO(r.getHotelCompany(), r);
-			
+
 			if (!srdto.getRoom().isFastReserve()) {
 				searchedRooms.add(srdto);
 			}
@@ -397,30 +420,204 @@ public class HotelCompanyServiceCon implements HotelCompanyService {
 	}
 
 	@Override
+	public ResponseEntity<Object> numberOfDays(Date checkInDate, Date checkOutDate) {
+
+		Calendar cStart = Calendar.getInstance();
+		cStart.setTime(checkInDate);
+
+		Calendar cEnd = Calendar.getInstance();
+		cEnd.setTime(checkOutDate);
+
+		long start = cStart.getTimeInMillis();
+		long end = cEnd.getTimeInMillis();
+		long diff = TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
+
+		System.out.println(diff);
+
+		return new ResponseEntity<Object>(diff, HttpStatus.OK);
+	}
+
+	@Override
 	public ResponseEntity<Object> makeReservation(RoomReservationDTO rrdto) {
 
-		Optional<Room> editRoom = roomRepository.findById(rrdto.getRoom().getId());
-		System.out.println(editRoom.get());
+		System.out.println("------------------------------------");
+		System.out.println(rrdto.getAdditionalServices().size());
+		System.out.println(rrdto.getRoom());
+		System.out.println(rrdto.getCheckInDate());
+		System.out.println(rrdto.getCheckOutDate());
+		System.out.println("------------------------------------");
 
+		Optional<Room> editRoom = roomRepository.findById(rrdto.getRoom().getId());
+
+		RegistredUser owner = null;
 		if (rrdto.getOwner() != null) {
-			RegistredUser owner = regUserRepository.findByUsername(rrdto.getOwner().getUsername());
-			
-			// kreiramo rezervaciju
-			RoomReservation newRoomReservation = new RoomReservation(owner);
-			newRoomReservation.setRoom(rrdto.getRoom());
-			newRoomReservation.setCheckIn(rrdto.getCheckInDate());
-			newRoomReservation.setCheckOut(rrdto.getCheckInDate());
-			newRoomReservation.setAdditionalServices(rrdto.getAdditionalServices());
-			newRoomReservation.setDiscountAndPrice(rrdto.getRoom(), rrdto.getCheckInDate(), rrdto.getAdditionalServices());
-			
-			editRoom.get().getRoomReservation().add(newRoomReservation);
-			roomRepository.save(editRoom.get());	
+			owner = regUserRepository.findByUsername(rrdto.getOwner().getUsername());
 		}
+		
+		Calendar calCID = Calendar.getInstance();
+		Calendar calCOD = Calendar.getInstance();
+
+		calCID.setTime(rrdto.getCheckInDate());
+		calCOD.setTime(rrdto.getCheckOutDate());
+		
+		if (calCOD.before(calCID)) {
+			return new ResponseEntity<Object>(new ResponseMessage("Check out can't be before check in!"),
+					HttpStatus.OK);
+		}
+		
+		boolean dateIsOK = false;
+		
+		List<RoomReservation> roomReservations = editRoom.get().getRoomReservation();
+		
+		if (roomReservations.isEmpty()) {
+			dateIsOK = true;
+		} else {
+			for (RoomReservation rr : roomReservations) {
+				
+				Calendar resCID = Calendar.getInstance();
+				Calendar resCOD = Calendar.getInstance();
+				
+				resCID.setTime(rr.getCheckIn());
+				resCOD.setTime(rr.getCheckOut());
+				
+				if (calCID.after(resCOD)) {
+					dateIsOK = true;
+				} else if (calCOD.before(resCID)) {
+					dateIsOK = true;
+				} else {
+					dateIsOK = false;
+					break;
+				}
+			}
+		}
+		
+		if (!dateIsOK) {
+			return new ResponseEntity<Object>(new ResponseMessage("Room is reserved in that period!"),
+					HttpStatus.OK);
+		}
+
+		// kreiramo rezervaciju
+		RoomReservation newRoomReservation = new RoomReservation(owner);
+		newRoomReservation.setRoom(rrdto.getRoom());
+		newRoomReservation.setCheckIn(rrdto.getCheckInDate());
+		newRoomReservation.setCheckOut(rrdto.getCheckInDate());
+		
+		for (HotelAdditionalService add : rrdto.getAdditionalServices()) {
+			Optional<HotelAdditionalService> temp = hasRepository.findById(add.getId());
+			newRoomReservation.getAdditionalServices().add(temp.get());
+		}
+
+		newRoomReservation.setDiscountAndPrice(newRoomReservation.getRoom(), newRoomReservation.getCheckIn(), newRoomReservation.getAdditionalServices());
+
+		editRoom.get().getRoomReservation().add(newRoomReservation);
+		roomRepository.saveAndFlush(editRoom.get());
 
 		// syso
 		System.out.println("da li uspes da save and flush");
 
-		return new ResponseEntity<Object>(new ResponseMessage("Kurac"), HttpStatus.OK);
+		return new ResponseEntity<Object>(new ResponseMessage("Success! Reservation has moved to cart."),
+				HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<Object> addHotelFastReservation(HotelFastReservationOffer hfro) {
+
+		Calendar resCID = Calendar.getInstance();
+		Calendar resCOD = Calendar.getInstance();
+		
+		resCID.setTime(hfro.getCheckInDate());
+		resCOD.setTime(hfro.getCheckOutDate());
+		
+		if (resCID.after(resCOD)) {
+			return new ResponseEntity<Object>(new ResponseMessage("Check out can't be before check in!"),
+					HttpStatus.OK);
+		}
+		
+		HotelFastReservationOffer newOffer = new HotelFastReservationOffer(hfro.getCheckInDate(), hfro.getCheckOutDate(), hfro.getRoom());
+		
+		for (HotelAdditionalService add : hfro.getAdditionalServices()) {
+			Optional<HotelAdditionalService> temp = hasRepository.findById(add.getId());
+			newOffer.getAdditionalServices().add(temp.get());
+		}
+		
+		newOffer.setDiscountAndPrice(newOffer.getRoom(), newOffer.getCheckInDate(), newOffer.getAdditionalServices());
+		
+		System.out.println(newOffer.getPrice());
+		
+		hfroRepository.save(newOffer);
+		
+		System.out.println(hfroRepository.findAll().size());
+		
+		return new ResponseEntity<Object>(new ResponseMessage("Success! Fast reservation is active now."),
+				HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<Object> getFastResevationsForCompany(long id) {
+		
+		List<HotelFastReservationRoomDTO> companyFastOffers = new ArrayList<>();
+		
+		System.out.println("id je: " + id);		
+		
+		List<HotelFastReservationOffer> allFastOffers = hfroRepository.findAll();
+		
+		System.out.println(allFastOffers.size());
+		
+		for(HotelFastReservationOffer temp : allFastOffers) {
+			if(temp.getRoom().getHotelCompany().getId() == id && temp.isActive()) {
+				System.out.println("uso");
+				HotelFastReservationRoomDTO hfrrdto = new HotelFastReservationRoomDTO();
+				hfrrdto.setRoom(temp.getRoom());
+				hfrrdto.setHfro(temp);
+				companyFastOffers.add(hfrrdto);
+			}
+		}
+		
+		System.out.println(companyFastOffers.size());
+		
+		for (int i = 0; i < companyFastOffers.size(); i++) {
+			for (HotelAdditionalService ads : companyFastOffers.get(i).getHfro().getAdditionalServices()) {
+				System.out.println(ads.getAdditionalServiceType());
+			}
+		}
+		
+		return new ResponseEntity<Object>(companyFastOffers, HttpStatus.OK);
+	}
+
+	@Override
+	public ResponseEntity<Object> reserveFastOffer(HotelFastReserveOfferToReservationDTO fastRwithOwner) {
+
+		RegistredUser regUser = regUserRepository.findByUsername(fastRwithOwner.getOwner().getUsername());
+		
+		System.out.println(regUser);
+		
+		if (regUser == null) {
+			System.out.println("rezervisao je neko ko trenutno nije ulogovan");
+		}
+		
+		Optional<HotelFastReservationOffer> reservedOffer = hfroRepository.findById(fastRwithOwner.getHfro().getId());
+		
+		if(!reservedOffer.isPresent()) {
+			return new ResponseEntity<Object>(new ResponseMessage("Choosen offer doesn't exist."),
+					HttpStatus.OK);
+		}
+		
+		reservedOffer.get().setActive(false);
+		
+		RoomReservation newRoomReservation = new RoomReservation(regUser, reservedOffer.get());
+		
+		Optional<Room> editRoom = roomRepository.findById(reservedOffer.get().getRoom().getId());
+		
+		if (!editRoom.isPresent()) {
+			return new ResponseEntity<Object>(new ResponseMessage("Choosen room in offer doesn't exist."),
+					HttpStatus.OK);
+		}
+		
+		editRoom.get().getRoomReservation().add(newRoomReservation);
+		roomRepository.saveAndFlush(editRoom.get());
+		
+		return new ResponseEntity<Object>(new ResponseMessage("Success! Reservation has moved to cart."),
+				HttpStatus.OK);
 	}
 
 }

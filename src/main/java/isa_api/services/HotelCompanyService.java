@@ -5,9 +5,11 @@ import java.util.List;
 
 import org.springframework.http.ResponseEntity;
 
+import isa_api.beans.hotel.HotelFastReservationOffer;
 import isa_api.dto.BasicDestinationDTO;
 import isa_api.dto.BasicHotelCompanyDTO;
 import isa_api.dto.HotelAdditionalServiceDTO;
+import isa_api.dto.HotelFastReserveOfferToReservationDTO;
 import isa_api.dto.RoomHotelCompanyDTO;
 import isa_api.dto.RoomReservationDTO;
 import isa_api.dto.UserLoginDTO;
@@ -36,6 +38,14 @@ public interface HotelCompanyService {
 			Date checkOutDate);
 
 	ResponseEntity<Object> checkPriceRang(Date checkInDate);
+	
+	ResponseEntity<Object> numberOfDays(Date checkInDate, Date checkOutDate);
 
 	ResponseEntity<Object> makeReservation(RoomReservationDTO rrdto);
+
+	ResponseEntity<Object> addHotelFastReservation(HotelFastReservationOffer hfro);
+
+	ResponseEntity<Object> getFastResevationsForCompany(long id);
+
+	ResponseEntity<Object> reserveFastOffer(HotelFastReserveOfferToReservationDTO fastRwithOwner);
 }

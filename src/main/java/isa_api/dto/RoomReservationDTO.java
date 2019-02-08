@@ -13,7 +13,7 @@ public class RoomReservationDTO {
 	private Date checkOutDate;
 	private Room room;
 	public List<HotelAdditionalService> additionalServices;
-	private UserLoginDTO owner;
+	private RegistredUser owner;
 
 	public RoomReservationDTO() {
 		super();
@@ -51,14 +51,12 @@ public class RoomReservationDTO {
 		this.checkOutDate = checkOutDate;
 	}
 
-	public UserLoginDTO getOwner() {
+	public RegistredUser getOwner() {
 		return owner;
 	}
 
-	public void setOwner(UserLoginDTO owner) {
+	public void setOwner(RegistredUser owner) {
 		this.owner = owner;
 	}
-
-
 
 }

@@ -1,9 +1,12 @@
 package isa_api.dto;
 
+import javax.validation.constraints.NotNull;
+
 import isa_api.beans.Location;
 
 public class BasicDestinationDTO {
-
+	
+	@NotNull(message="Location is required")
 	private Location location;
 	private Long company;
 

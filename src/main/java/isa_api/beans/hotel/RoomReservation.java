@@ -1,5 +1,6 @@
 package isa_api.beans.hotel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -43,9 +44,9 @@ public class RoomReservation extends Reservation {
 	
 	public RoomReservation(RegistredUser owner, HotelFastReservationOffer hfro) {
 		super(owner);
-		this.setId(hfro.getId());
-		this.setCheckIn(hfro.getCheckIn());
-		this.setCheckOut(hfro.getCheckOut());
+		
+		this.setCheckIn(hfro.getCheckInDate());
+		this.setCheckOut(hfro.getCheckOutDate());
 		this.setRoom(hfro.getRoom());
 		this.setAdditionalServices(hfro.getAdditionalServices());
 		this.setAdditionalServicesDiscount(hfro.getAdditionalServicesDiscount());
@@ -72,18 +73,20 @@ public class RoomReservation extends Reservation {
 		
 	    long start = today.getTimeInMillis();
 	    long end = ci.getTimeInMillis();
-	    long razlika = TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
+	    long dana = TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
 		double roomPrice = 0.0;
 		
-	    if(razlika <= 31.0) {
+		dana++; // on racuna isti datum kao nula dana, pa sam dodao jedan dan odmah
+		
+	    if(dana <= 31) {
 	    	roomPrice = room.getNextMonthPrice();
-	    } else if (razlika <= 92.0) {
+	    } else if (dana <= 92) {
 	    	roomPrice = room.getNextThreeMonthPrice();
 	    } else {
 	    	roomPrice = room.getNextHalfYearPrice();
 	    }
 
-		this.price = roomPrice + asPrice * (1 - this.additionalServicesDiscount);
+		this.price = roomPrice * dana + asPrice * (1 - this.additionalServicesDiscount);
 	}
 
 	public Room getRoom() {
@@ -121,6 +124,11 @@ public class RoomReservation extends Reservation {
 	}
 
 	public List<HotelAdditionalService> getAdditionalServices() {
+		
+		if (this.additionalServices==null) {
+			this.additionalServices = new ArrayList<>();
+		}
+		
 		return additionalServices;
 	}
 

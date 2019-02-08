@@ -224,6 +224,9 @@ public class Flight {
 	}
 
 	public List<String> getBlackList() {
+		if(this.blackList==null) {
+			this.blackList = new ArrayList<>();
+		}
 		return blackList;
 	}
 

@@ -1,5 +1,6 @@
 package isa_api.beans.hotel;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -14,6 +15,8 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 @Entity
 public class HotelFastReservationOffer {
 	
@@ -21,10 +24,11 @@ public class HotelFastReservationOffer {
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 	
-	private Date checkIn;
-	private Date checkOut;
+	private Date checkInDate;
+	private Date checkOutDate;
 
 	@ManyToOne(optional = false)
+	@JsonBackReference
 	private Room room;
 	
 	@OneToMany(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
@@ -33,23 +37,25 @@ public class HotelFastReservationOffer {
 	private double additionalServicesDiscount;
 	
 	private double price;
+	
+	private boolean active;
 
 	public HotelFastReservationOffer() {
 		super();
+		this.setActive(true);
 		// TODO Auto-generated constructor stub
 	}
 
-	public HotelFastReservationOffer(Date checkIn, Date checkOut, Room room,
-			List<HotelAdditionalService> additionalServices) {
+	public HotelFastReservationOffer(Date checkInDate, Date checkOutDate, Room room) {
 		super();
-		this.checkIn = checkIn;
-		this.checkOut = checkOut;
+		this.checkInDate = checkInDate;
+		this.checkOutDate = checkOutDate;
 		this.room = room;
-		this.additionalServices = additionalServices;
-		this.setDiscountAndPrice(this.room, this.checkIn, this.additionalServices);
+		this.setActive(true);
+		
 	}
 	
-	private void setDiscountAndPrice(Room room, Date checkIn, List<HotelAdditionalService> additionalServices) {
+	public void setDiscountAndPrice(Room room, Date checkInDate, List<HotelAdditionalService> additionalServices) {
 		
 		this.additionalServicesDiscount = 0.05 * additionalServices.size();
 		
@@ -60,7 +66,7 @@ public class HotelFastReservationOffer {
 		}
 		
 		Calendar ci = Calendar.getInstance();
-		ci.setTime(checkIn);
+		ci.setTime(checkInDate);
 		
 		Calendar today = Calendar.getInstance();
 		Date now = new Date();
@@ -68,18 +74,20 @@ public class HotelFastReservationOffer {
 		
 	    long start = today.getTimeInMillis();
 	    long end = ci.getTimeInMillis();
-	    long razlika = TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
+	    long dana = TimeUnit.MILLISECONDS.toDays(Math.abs(end - start));
 		double roomPrice = 0.0;
 		
-	    if(razlika <= 31.0) {
+		dana++;
+		
+	    if(dana <= 31.0) {
 	    	roomPrice = room.getNextMonthPrice();
-	    } else if (razlika <= 92.0) {
+	    } else if (dana <= 92.0) {
 	    	roomPrice = room.getNextThreeMonthPrice();
 	    } else {
 	    	roomPrice = room.getNextHalfYearPrice();
 	    }
 
-		this.price = 0.8 * roomPrice + asPrice * (1 - this.additionalServicesDiscount);
+		this.price = 0.8 * roomPrice * dana + asPrice * (1 - this.additionalServicesDiscount);
 	}
 
 	public Long getId() {
@@ -90,20 +98,20 @@ public class HotelFastReservationOffer {
 		this.id = id;
 	}
 
-	public Date getCheckIn() {
-		return checkIn;
+	public Date getCheckInDate() {
+		return checkInDate;
 	}
 
-	public void setCheckIn(Date checkIn) {
-		this.checkIn = checkIn;
+	public void setCheckInDate(Date checkInDate) {
+		this.checkInDate = checkInDate;
 	}
 
-	public Date getCheckOut() {
-		return checkOut;
+	public Date getCheckOutDate() {
+		return checkOutDate;
 	}
 
-	public void setCheckOut(Date checkOut) {
-		this.checkOut = checkOut;
+	public void setCheckOutDate(Date checkOutDate) {
+		this.checkOutDate = checkOutDate;
 	}
 
 	public Room getRoom() {
@@ -115,6 +123,11 @@ public class HotelFastReservationOffer {
 	}
 
 	public List<HotelAdditionalService> getAdditionalServices() {
+		
+		if (this.additionalServices==null) {
+			this.additionalServices = new ArrayList<>();
+		}
+		
 		return additionalServices;
 	}
 
@@ -136,6 +149,14 @@ public class HotelFastReservationOffer {
 
 	public void setPrice(double price) {
 		this.price = price;
+	}
+
+	public boolean isActive() {
+		return active;
+	}
+
+	public void setActive(boolean active) {
+		this.active = active;
 	}
 	
 }

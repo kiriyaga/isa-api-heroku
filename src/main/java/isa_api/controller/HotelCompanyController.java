@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import isa_api.beans.hotel.HotelFastReservationOffer;
 import isa_api.dto.BasicDestinationDTO;
 import isa_api.dto.BasicHotelCompanyDTO;
 import isa_api.dto.HotelAdditionalServiceDTO;
+import isa_api.dto.HotelFastReserveOfferToReservationDTO;
 import isa_api.dto.RoomHotelCompanyDTO;
 import isa_api.dto.RoomReservationDTO;
 import isa_api.dto.UserLoginDTO;
@@ -110,11 +112,40 @@ public class HotelCompanyController {
 		return hotelCompanyService.checkPriceRang(checkInDate);
 	}
 	
+	@RequestMapping(method = RequestMethod.GET, value = "/public/hotel/checkPriceRang/{checkInDate}/{checkOutDate}",
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> numberOfDays(@PathVariable Date checkInDate, @PathVariable Date checkOutDate) {
+
+		return hotelCompanyService.numberOfDays(checkInDate, checkOutDate);
+	}
+	
 	@RequestMapping(method = RequestMethod.POST, value = "/public/hotel/makeReservation",
-			produces = MediaType.APPLICATION_JSON_VALUE, consumes = MediaType.APPLICATION_JSON_VALUE)
+			produces = MediaType.APPLICATION_JSON_VALUE)
 	public ResponseEntity<?> makeReservation(@RequestBody RoomReservationDTO rrdto) {
 
 		return hotelCompanyService.makeReservation(rrdto);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/auth/hotel/addHotelFastReservation",
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	@PreAuthorize("@securityService.hasProtectedAccess('HOTELADMIN')")
+	public ResponseEntity<?> addHotelFastReservation(@RequestBody HotelFastReservationOffer hfro) {
+
+		return hotelCompanyService.addHotelFastReservation(hfro);
+	}
+	
+	@RequestMapping(method = RequestMethod.GET, value = "/public/hotel/getFastResevationsForCompany/{id}",
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> getFastResevationsForCompany(@PathVariable long id) {
+
+		return hotelCompanyService.getFastResevationsForCompany(id);
+	}
+	
+	@RequestMapping(method = RequestMethod.POST, value = "/public/hotel/reserveFastOffer",
+			produces = MediaType.APPLICATION_JSON_VALUE)
+	public ResponseEntity<?> reserveFastOffer(@RequestBody HotelFastReserveOfferToReservationDTO fastRwithOwner) {
+
+		return hotelCompanyService.reserveFastOffer(fastRwithOwner);
 	}
 
 }

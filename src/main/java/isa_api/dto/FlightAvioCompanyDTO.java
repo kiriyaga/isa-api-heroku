@@ -28,6 +28,32 @@ public class FlightAvioCompanyDTO {
 	private String travelTime;
 	@NotNull(message = "Travel distance is required!")
 	private String travelDistance;
+	
+	
+
+	public FlightAvioCompanyDTO(AvioCompany company, Long id,
+			@NotNull(message = "Price is required!") double priceForTicket,
+			@NotNull(message = "Additional Price for Carry Bag is required!") double additionalPriceCarryBag,
+			@NotNull(message = "Additional Price for Check Bag is required!") double additionalPriceCheckBag,
+			@NotNull(message = "Number is required!") int maxCarryBag,
+			@NotNull(message = "Number is required!") int maxCheckBag,
+			@NotNull(message = "Start Destination is required!") FlightStop startDestination,
+			@NotNull(message = "End destination is required!") FlightStop endDestination,
+			@NotNull(message = "Travel time is required!") String travelTime,
+			@NotNull(message = "Travel distance is required!") String travelDistance) {
+		super();
+		this.company = company;
+		this.id = id;
+		this.priceForTicket = priceForTicket;
+		this.additionalPriceCarryBag = additionalPriceCarryBag;
+		this.additionalPriceCheckBag = additionalPriceCheckBag;
+		this.maxCarryBag = maxCarryBag;
+		this.maxCheckBag = maxCheckBag;
+		this.startDestination = startDestination;
+		this.endDestination = endDestination;
+		this.travelTime = travelTime;
+		this.travelDistance = travelDistance;
+	}
 
 	public FlightAvioCompanyDTO() {
 		// TODO Auto-generated constructor stub

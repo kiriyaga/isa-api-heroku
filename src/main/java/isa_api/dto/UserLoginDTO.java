@@ -1,9 +1,12 @@
 package isa_api.dto;
 
+import javax.validation.constraints.NotNull;
+
 import isa_api.beans.users.AuthorityEnum;
 
 public class UserLoginDTO {
 
+	@NotNull(message = "Username is required!")
 	private String username;
 
 	private String name;
@@ -20,6 +23,7 @@ public class UserLoginDTO {
 
 	private Boolean firstLogin;
 	
+	@NotNull(message = "Authority is required!")
 	private AuthorityEnum authority;
 
 	public UserLoginDTO() {

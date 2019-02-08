@@ -1,6 +1,8 @@
 package isa_api.beans.hotel;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.Enumerated;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
@@ -15,13 +17,15 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 public class HotelAdditionalService {
 
 	private Double price;
+	
+	@Enumerated
 	private HotelAdditionalServiceEnum additionalServiceType;
 	
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
 
-	@ManyToOne(optional = false)
+	@ManyToOne(optional = false,cascade=CascadeType.ALL)
 	@JsonBackReference
 	private HotelCompany hotelCompany;
 	
@@ -42,6 +46,7 @@ public class HotelAdditionalService {
 	}
 
 	public HotelAdditionalServiceEnum getAdditionalServiceType() {
+		
 		return additionalServiceType;
 	}
 

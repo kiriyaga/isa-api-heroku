@@ -2,10 +2,14 @@ package isa_api.dto;
 
 import java.util.Date;
 
+import javax.validation.constraints.NotNull;
+
 public class EarningsDTO {
 	
 	private Long company;
+	@NotNull(message = "Date is required!")
 	private Date earnings1;
+	@NotNull(message = "Date is required!")
 	private Date earnings2;
 	
 	

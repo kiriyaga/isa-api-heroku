@@ -1,8 +1,12 @@
 package isa_api.dto;
 
+import javax.validation.constraints.NotNull;
+
 public class LoginDTO {
 
+	@NotNull(message="Username is required!")
 	private String username;
+	@NotNull(message="Password is required!")
 	private String password;
 
 	public LoginDTO() {

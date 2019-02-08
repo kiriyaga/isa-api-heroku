@@ -28,6 +28,16 @@ public class FlightStop {
 	public FlightStop() {
 		// TODO Auto-generated constructor stub
 	}
+	
+
+	public FlightStop(Long id, Date takeOff, String time, Location location) {
+		super();
+		this.id = id;
+		this.takeOff = takeOff;
+		this.time = time;
+		this.location = location;
+	}
+
 
 	public Date getTakeOff() {
 		return takeOff;

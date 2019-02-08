@@ -63,6 +63,9 @@ public class AvioCompany extends Company {
 	}
 
 	public List<Location> getDestinations() {
+		if(this.destinations==null) {
+			this.destinations = new ArrayList<>();
+		}
 		return destinations;
 	}
 
@@ -75,6 +78,9 @@ public class AvioCompany extends Company {
 	}
 
 	public List<Earnings> getEarnings() {
+		if(this.earnings == null) {
+			this.earnings = new ArrayList<>();
+		}
 		return earnings;
 	}
 
@@ -83,6 +89,10 @@ public class AvioCompany extends Company {
 	}
 
 	public List<AvioCompanyUsers> getUsers() {
+		if(this.users == null)
+		{
+			this.users = new ArrayList<>();
+		}
 		return users;
 	}
 

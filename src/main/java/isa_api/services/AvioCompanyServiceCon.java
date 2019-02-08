@@ -78,52 +78,52 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 	private MailService mailService;
 
 	@Override
-	public ResponseEntity<Object> getAllCompanies() {
+	public List<AvioCompany> getAllCompanies() {
 
 		List<AvioCompany> allComp = avioRepository.findAll();
-		return new ResponseEntity<Object>(allComp, HttpStatus.OK);
+		return allComp;
 
 	}
 
 	@Override
-	public ResponseEntity<Object> getAvioCompany(Long id) {
+	public AvioCompany getAvioCompany(Long id) {
 		Optional<AvioCompany> avio = avioRepository.findById(id);
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> getFlight(Long id) {
+	public Flight getFlight(Long id) {
 
 		Optional<Flight> avio = flightRepository.findById(id);
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> getAvioCompanyfromAdmin(UserLoginDTO user) {
+	public AvioCompany getAvioCompanyfromAdmin(UserLoginDTO user) {
 
 		AvioAdmin avioAdmin = avioAdminRepository.findByUsername(user.getUsername());
 
-		return new ResponseEntity<Object>(avioAdmin.getAvioCompany(), HttpStatus.OK);
+		return avioAdmin.getAvioCompany();
 
 	}
 
 	@Override
-	public ResponseEntity<Object> editCompany(BasicAvioCompanyDTO basic) {
+	public AvioCompany editCompany(BasicAvioCompanyDTO basic) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(basic.getId());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
 		avio.get().setName(basic.getName());
@@ -131,56 +131,54 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 
 		avioRepository.saveAndFlush(avio.get());
 
-		return new ResponseEntity<Object>(avio, HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> addAndEditDestination(BasicDestinationDTO basic) {
+	public AvioCompany addAndEditDestination(BasicDestinationDTO basic) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(basic.getCompany());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
-		System.out.println(basic.getLocation().getId());
 		locationRepository.saveAndFlush(basic.getLocation());
 
-		return new ResponseEntity<Object>(avio, HttpStatus.OK);
+		return avio.get();
 
 	}
 	
 	@Override
-	public ResponseEntity<Object> addDestination(BasicDestinationDTO basic) {
+	public AvioCompany addDestination(BasicDestinationDTO basic) {
 		Optional<AvioCompany> avio = avioRepository.findById(basic.getCompany());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 		avio.get().getDestinations().add(basic.getLocation());
 		avioRepository.saveAndFlush(avio.get());
-		return new ResponseEntity<Object>(avio, HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteDestination(BasicDestinationDTO basic) {
+	public AvioCompany deleteDestination(BasicDestinationDTO basic) {
 		Optional<AvioCompany> avio = avioRepository.findById(basic.getCompany());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
-		avio.get().getDestinations().remove(basic.getLocation().getId().intValue());
+		avio.get().getDestinations().remove(basic.getLocation());
 
 		avioRepository.saveAndFlush(avio.get());
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> addFlight(FlightAvioCompanyDTO flight) {
+	public AvioCompany addFlight(FlightAvioCompanyDTO flight) {
 		Optional<AvioCompany> avio = avioRepository.findById(flight.getCompany().getId());
-		System.out.println("ewqeq");
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 		Flight flightTemp = new Flight(0.0, 0, avio.get());
 		flightTemp.setPriceForTicket(flight.getPriceForTicket());
@@ -197,15 +195,15 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 
 		avioRepository.saveAndFlush(avio.get());
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> addFlightStop(FlightStopDTO flight) {
+	public AvioCompany addFlightStop(FlightStopDTO flight) {
 		Optional<AvioCompany> avio = avioRepository.findById(flight.getCompany().getId());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 		for (Flight f : avio.get().flights) {
 			if (f.getId().equals(flight.getFlight().getId())) {
@@ -214,16 +212,16 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 			}
 		}
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> editFlight(FlightAvioCompanyDTO flight) {
+	public AvioCompany editFlight(FlightAvioCompanyDTO flight) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(flight.getCompany().getId());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
 		Optional<Flight> flightTemp = flightRepository.findById(flight.getId());
@@ -239,17 +237,17 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 		flightTemp.get().setTravelDistance(flight.getTravelDistance());
 		flightRepository.saveAndFlush(flightTemp.get());
 
-		return new ResponseEntity<Object>(flightTemp.get().getAvioCompany(), HttpStatus.OK);
+		return flightTemp.get().getAvioCompany();
 
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteFlight(DeleteFlightDTO flight) {
+	public AvioCompany deleteFlight(DeleteFlightDTO flight) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(flight.getCompany().getId());
 		if (!avio.isPresent()) {
 
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
 		for (Flight f : avio.get().getFlights()) {
@@ -263,15 +261,15 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 
 		}
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 
 	}
 
 	@Override
-	public ResponseEntity<Object> deleteFlightStop(FlightStopDTO flight) {
+	public AvioCompany deleteFlightStop(FlightStopDTO flight) {
 		Optional<AvioCompany> avio = avioRepository.findById(flight.getCompany().getId());
 		if (!avio.isPresent()) {
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 		for (Flight f : avio.get().flights) {
 			if (f.getId().equals(flight.getFlight().getId())) {
@@ -287,12 +285,12 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 			}
 		}
 
-		return new ResponseEntity<Object>(avio.get(), HttpStatus.OK);
+		return avio.get();
 
 	}
 
 	@Override
-	public ResponseEntity<Object> getFlightFromUser(FlightFromUserDTO info) {
+	public Flight getFlightFromUser(FlightFromUserDTO info) {
 
 		AvioAdmin avioAdmin = avioAdminRepository.findByUsername(info.getUser().getUsername());
 		AvioCompany avioCompany = avioAdmin.getAvioCompany();
@@ -300,17 +298,17 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 		for (Flight flight : avioCompany.getFlights()) {
 			if (flight.getId().equals(info.getIndex())) {
 
-				return new ResponseEntity<Object>(flight, HttpStatus.OK);
+				return flight;
 			}
 		}
 
-		return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+		return null;
 
 	}
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRES_NEW)
-	public ResponseEntity<Object> reserveFlight(AvioOrderDTO order) {
+	public String reserveFlight(AvioOrderDTO order)  throws Exception{
 		Optional<Flight> flight = flightRepository.findById(order.getFlight().getId());
 		if (order.getOwner() != null) {
 			RegistredUser owner = regUserRepository.findByUsername(order.getOwner().getUsername());
@@ -332,7 +330,6 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 			if (order.getFriends() != null) {
 				int k = 1;
 				for (UserLoginDTO user : order.getFriends()) {
-					System.out.println("Treba posatli: " + user.getUsername());
 					RegistredUser regUser = regUserRepository.findByUsername(user.getUsername());
 					SecurityUser userDetails = (SecurityUser) userDetailService.loadUserByUsername(user.getUsername());
 					String token = tokenUtils.generateToken(userDetails);
@@ -385,19 +382,14 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 		comp.get().getUsers().add(new AvioCompanyUsers(new Date(), order.getSeats().size()));
 		avioRepository.saveAndFlush(comp.get());
 
-		return new ResponseEntity<Object>(new ResponseMessage("Successfuly reserved flight!"), HttpStatus.OK);
-
+		return "Successfuly reserved flight!";
 	}
 
 	@Override
 	@Transactional(readOnly = false, propagation = Propagation.REQUIRED)
-	public ResponseEntity<Object> saveSeats(FlightSeatsDTO data) {
+	public Flight saveSeats(FlightSeatsDTO data) {
 
 		Optional<Flight> f = flightRepository.findById(data.getId());
-		/*
-		 * for (Seat seat : f.get().getSeats()) { seat.setActive(false); }
-		 * flightRepository.saveAndFlush(f.get());
-		 */
 		for (Seat seat : data.getSeats()) {
 			if (seat.getId() != null) {
 				Optional<Seat> s = seatRepository.findById(seat.getId());
@@ -431,18 +423,15 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 				f.get().getSeats().add(seat);
 			}
 		}
-		System.out.println("42424");
 		
 		flightRepository.save(f.get());
 
-		return new ResponseEntity<Object>(f.get(), HttpStatus.OK);
+		return f.get();
 	}
 
 	@Override
-	public ResponseEntity<Object> searchForFlights(String type, int num, SeatClassEnum classs, String from, String to,
+	public List<SearchedFlightsDTO> searchForFlights(String type, int num, SeatClassEnum classs, String from, String to,
 			Date takeoff, Date landing) {
-		System.out.println("Udjes li ovde");
-		System.out.println(type + num + classs + from + to + takeoff + landing);
 		List<Flight> flights = flightRepository.findAll();
 		Calendar cal1 = Calendar.getInstance();
 		Calendar cal2 = Calendar.getInstance();
@@ -479,7 +468,6 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 				takeoffB = true;
 			}
 
-			System.out.println(numB + "dsa" + num + classsB + fromB + toB + takeoffB);
 			// jos uslov za tip puta proverimo da li ima puteva koji se vracaju kada je
 			// njegov
 			if (type.equals("ONE-WAY")) {
@@ -505,24 +493,21 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 			}
 
 		}
-		System.out.println(searchedFlights.size());
-		return new ResponseEntity<Object>(searchedFlights, HttpStatus.OK);
+		
+		return searchedFlights;
 	}
 
 	@Override
-	public ResponseEntity<Object> confirmFlight(String answer, Long seat, Long flight, String token) {
+	public Boolean confirmFlight(String answer, Long seat, Long flight, String token) {
 
 		String username = tokenUtils.getUsernameFromToken(token);
 
 		if (!tokenUtils.validateToken(token, userDetailService.loadUserByUsername(username)))
-			return new ResponseEntity<Object>(new ResponseMessage("Verification link is not valid!"),
-					HttpStatus.NOT_ACCEPTABLE);
-
+			return false;
 		Optional<Flight> f = flightRepository.findById(flight);
 		for (String un : f.get().getBlackList()) {
 			if (un.equals(username)) {
-				return new ResponseEntity<Object>(new ResponseMessage("Verification link is not valid!"),
-						HttpStatus.NOT_ACCEPTABLE);
+				return false;
 			}
 
 		}
@@ -554,36 +539,34 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 			company.getUsers().add(new AvioCompanyUsers(new Date(), -1));
 			avioRepository.saveAndFlush(company);
 		}
-		return new ResponseEntity<Object>(new ResponseMessage("Your answer is sent!"), HttpStatus.OK);
-	}
+		return true;
+		}
 
 	@Override
-	public ResponseEntity<Object> checkConfirm(Long seat, Long flight, String token) {
+	public String checkConfirm(Long seat, Long flight, String token) {
 
 		System.out.println("fsafsa");
 		String username = tokenUtils.getUsernameFromToken(token);
 
 		if (!tokenUtils.validateToken(token, userDetailService.loadUserByUsername(username)))
-			return new ResponseEntity<Object>(new ResponseMessage("Verification link is not valid!"),
-					HttpStatus.NOT_ACCEPTABLE);
+			return null;
 
 		Optional<Flight> f = flightRepository.findById(flight);
 		for (String un : f.get().getBlackList()) {
 			if (un.equals(username)) {
-				return new ResponseEntity<Object>(new ResponseMessage("Verification link is not valid!"),
-						HttpStatus.NOT_ACCEPTABLE);
+				return null;
 			}
 		}
-		return new ResponseEntity<Object>(new ResponseMessage(username), HttpStatus.OK);
+		return username;
 	}
 
 	@Override
-	public ResponseEntity<Object> getCompanyGraph(Long id) {
+	public Double[] getCompanyGraph(Long id) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(id);
 
 		if (!avio.isPresent()) {
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
 		Date date = new Date();
@@ -599,7 +582,7 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 		cal.set(Calendar.DAY_OF_MONTH, 1);
 
 		// treba proveriti i racunati ljude
-		double count[] = { 0, 0, 0 };
+		Double count[] = { 0.0, 0.0, 0.0 };
 
 		for (AvioCompanyUsers user : avio.get().getUsers()) {
 			Calendar temp = Calendar.getInstance();
@@ -621,17 +604,17 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 
 		}
 
-		return new ResponseEntity<Object>(count, HttpStatus.OK);
+		return count;
 
 	}
 
 	@Override
-	public ResponseEntity<Object> getCompanyEarnings(EarningsDTO earnings) {
+	public Double getCompanyEarnings(EarningsDTO earnings) {
 
 		Optional<AvioCompany> avio = avioRepository.findById(earnings.getCompany());
 
 		if (!avio.isPresent()) {
-			return new ResponseEntity<Object>(null, HttpStatus.NOT_FOUND);
+			return null;
 		}
 
 		double earningss = (double) 0;
@@ -644,7 +627,7 @@ public class AvioCompanyServiceCon implements AvioCompanyService {
 
 		}
 
-		return new ResponseEntity<Object>(earningss, HttpStatus.OK);
+		return earningss;
 
 	}
 
