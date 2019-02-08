@@ -1,7 +1,12 @@
+sudo: required
 language: java
-sudo: true
-dist: trusty
 jdk: oraclejdk8
-install: true
+
+before_install:
+  - chmod +x mvnw
 script:
-- mvn install
+  - ./mvnw clean install -DskipTests=false -B
+deploy:
+  provider: heroku
+  api_key: $HEROKU_API_KEY
+  app: isa-api-heroku
